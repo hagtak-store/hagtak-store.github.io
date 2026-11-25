@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حاجتك</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header id="sname"></header>
+<div class="strip">الدفع عند الاستلام أو فودافون كاش</div>
+<main><div class="grid" id="grid"></div>
+<section class="card" style="margin-top:16px"><div class="body"><h2>إزاي تطلب؟</h2>
+<ol style="padding-inline-start:20px;font-size:14px"><li>اختار المنتج واضغط «اطلب الآن».</li><li>اكتب بياناتك وعنوانك.</li><li>هيفتح معاك واتساب برسالة الطلب جاهزة، اضغط إرسال.</li><li>هنكلمك نأكد الطلب، وتدفع كاش عند الاستلام أو فودافون كاش.</li></ol></div></section>
+</main>
+<dialog id="dlg"><form id="f" method="dialog">
+<h2 id="dt"></h2>
+<label>الاسم بالكامل<input name="name" required></label>
+<label>رقم الموبايل<input name="phone" type="tel" inputmode="numeric" required pattern="01[0-9]{9}" placeholder="01XXXXXXXXX"></label>
+<label>المحافظة<select name="gov" required><option value="">اختار</option></select></label>
+<label>العنوان بالتفصيل<textarea name="addr" rows="2" required></textarea></label>
+<label>الكمية<input name="qty" type="number" min="1" max="10" value="1"></label>
+<label>طريقة الدفع<select name="pay"><option>الدفع عند الاستلام</option><option>فودافون كاش</option></select></label>
+<div class="err" id="err"></div>
+<button type="button" class="btn" id="send">إرسال الطلب على واتساب</button>
+<button type="button" class="btn sec" id="close">إلغاء</button>
+<p class="note">مصاريف الشحن والإجمالي النهائي هنأكدهم معاك في المكالمة.</p>
+</form></dialog>
+<footer id="foot"></footer>
+<script src="products.js"></script>
+<script>
+const S=window.STORE,$=id=>document.getElementById(id);
+document.title=S.name;$("sname").textContent=S.name;$("foot").textContent="© "+S.name;
+const govs=["القاهرة","الجيزة","الإسكندرية","الغربية","الدقهلية","الشرقية","المنوفية","كفر الشيخ","البحيرة","القليوبية","دمياط","بورسعيد","الإسماعيلية","السويس","الفيوم","بني سويف","المنيا","أسيوط","سوهاج","قنا","الأقصر","أسوان","الوادي الجديد","مطروح","البحر الأحمر","شمال سيناء","جنوب سيناء"];
+govs.forEach(g=>{const o=document.createElement("option");o.textContent=g;f.gov.appendChild(o)});
+const ph='<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="400" fill="#e8e4da"/><rect x="150" y="90" width="100" height="230" rx="40" fill="#0f5132"/><rect x="175" y="60" width="50" height="50" rx="14" fill="#25d366"/><text x="200" y="370" font-size="22" text-anchor="middle" fill="#666">صورة مؤقتة</text></svg>';
+let cur=null;
+S.products.forEach(p=>{
+ const c=document.createElement("article");c.className="card";
+ c.innerHTML=`<div class="img">${p.image?`<img src="${p.image}" alt="${p.name}">`:ph}${p.placeholder?'<span class="ph">صورة وسعر مؤقتين</span>':''}</div>
+ <div class="body"><h2>${p.name}</h2><div class="price">${p.price} ${S.currency}${p.oldPrice?`<span class="old">${p.oldPrice}</span>`:''}</div>
+ <p style="font-size:14px;margin-top:6px">${p.desc}</p><ul class="f">${p.features.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <div class="pay"><span>الدفع عند الاستلام</span><span>فودافون كاش</span></div>
+ <button class="btn" data-id="${p.id}">اطلب الآن</button></div>`;
+ $("grid").appendChild(c);
+});
+$("grid").addEventListener("click",e=>{const id=e.target.dataset.id;if(!id)return;cur=S.products.find(p=>p.id===id);$("dt").textContent=cur.name;$("err").textContent="";$("dlg").showModal()});
+$("close").onclick=()=>$("dlg").close();
+$("send").onclick=()=>{
+ if(!f.reportValidity()){return}
+ const d=new FormData(f),q=+d.get("qty")||1;
+ const m=`طلب جديد من ${S.name}\nالمنتج: ${cur.name}\nالكمية: ${q}\nالسعر: ${cur.price*q} ${S.currency}\nالاسم: ${d.get("name")}\nالموبايل: ${d.get("phone")}\nالمحافظة: ${d.get("gov")}\nالعنوان: ${d.get("addr")}\nالدفع: ${d.get("pay")}`;
+ window.open("https://wa.me/"+S.whatsapp+"?text="+encodeURIComponent(m),"_blank");
+ $("dlg").close();
+};
+</script></body></html>
